@@ -99,19 +99,24 @@ namespace
             // Focus on XAML Island host window for Acrylic brush support.
             ::SetFocus(XamlWindowHandle);
 
-            ::MileDisableSystemBackdrop(hWnd);
-
             ::MileSetUseImmersiveDarkModeAttribute(
                 hWnd,
                 (Content.ActualTheme() == winrt::ElementTheme::Dark
                     ? TRUE
                     : FALSE));
 
-            ::MileSetCaptionColorAttribute(
+            ::MileSetWindowFrameMargins(hWnd, -1, -1, -1, -1);
+
+            if (FAILED(::MileSetSystemBackdropAttribute(
                 hWnd,
-                (Content.ActualTheme() == winrt::ElementTheme::Dark
-                    ? RGB(0, 0, 0)
-                    : RGB(255, 255, 255)));
+                2)))
+            {
+                ::MileSetCaptionColorAttribute(
+                    hWnd,
+                    (Content.ActualTheme() == winrt::ElementTheme::Dark
+                        ? RGB(32, 32, 32)
+                        : RGB(243, 243, 243)));
+            }
 
             return 0;
         }
@@ -249,12 +254,6 @@ namespace
                             (Content.ActualTheme() == winrt::ElementTheme::Dark
                                 ? TRUE
                                 : FALSE));
-
-                        ::MileSetCaptionColorAttribute(
-                            hWnd,
-                            (Content.ActualTheme() == winrt::ElementTheme::Dark
-                                ? RGB(0, 0, 0)
-                                : RGB(255, 255, 255)));
                     }
                 }
             }

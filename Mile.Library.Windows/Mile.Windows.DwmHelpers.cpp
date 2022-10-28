@@ -15,30 +15,40 @@
 
 namespace
 {
-    static bool IsWindows10Version20H1OrLater()
+    bool IsWindowsVersionOrLater(
+        DWORD const& MajorVersion,
+        DWORD const& MinorVersion,
+        DWORD const& BuildNumber)
     {
-        static bool CachedResult = ([]() -> bool
-        {
-            OSVERSIONINFOEXW OSVersionInfoEx = { 0 };
-            OSVersionInfoEx.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
-            OSVersionInfoEx.dwMajorVersion = 10;
-            OSVersionInfoEx.dwMinorVersion = 0;
-            OSVersionInfoEx.dwBuildNumber = 19041;
-            return ::VerifyVersionInfoW(
-                &OSVersionInfoEx,
-                VER_BUILDNUMBER,
+        OSVERSIONINFOEXW OSVersionInfoEx = { 0 };
+        OSVersionInfoEx.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
+        OSVersionInfoEx.dwMajorVersion = MajorVersion;
+        OSVersionInfoEx.dwMinorVersion = MinorVersion;
+        OSVersionInfoEx.dwBuildNumber = BuildNumber;
+        return ::VerifyVersionInfoW(
+            &OSVersionInfoEx,
+            VER_BUILDNUMBER,
+            ::VerSetConditionMask(
                 ::VerSetConditionMask(
                     ::VerSetConditionMask(
-                        ::VerSetConditionMask(
-                            0,
-                            VER_MAJORVERSION,
-                            VER_GREATER_EQUAL),
-                        VER_MINORVERSION,
+                        0,
+                        VER_MAJORVERSION,
                         VER_GREATER_EQUAL),
-                    VER_BUILDNUMBER,
-                    VER_GREATER_EQUAL));
-        }());
+                    VER_MINORVERSION,
+                    VER_GREATER_EQUAL),
+                VER_BUILDNUMBER,
+                VER_GREATER_EQUAL));
+    }
 
+    static bool IsWindows10Version20H1OrLater()
+    {
+        static bool CachedResult = IsWindowsVersionOrLater(10, 0, 19041);
+        return CachedResult;
+    }
+
+    static bool IsSupportSystemBackdrop()
+    {
+        static bool CachedResult = IsWindowsVersionOrLater(10, 0, 22523);
         return CachedResult;
     }
 }
@@ -70,16 +80,37 @@ EXTERN_C HRESULT WINAPI MileSetCaptionColorAttribute(
         sizeof(COLORREF));
 }
 
-EXTERN_C HRESULT WINAPI MileDisableSystemBackdrop(
-    _In_ HWND WindowHandle)
+EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
+    _In_ HWND WindowHandle,
+    _In_ int LeftWidth,
+    _In_ int TopHeight,
+    _In_ int RightWidth,
+    _In_ int BottomHeight)
 {
+    MARGINS Value{ 0 };
+    Value.cxLeftWidth = LeftWidth;
+    Value.cyTopHeight = TopHeight;
+    Value.cxRightWidth = RightWidth;
+    Value.cyBottomHeight = BottomHeight;
+    return DwmExtendFrameIntoClientArea(
+        WindowHandle,
+        &Value);
+}
+
+EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
+    _In_ HWND WindowHandle,
+    _In_ DWORD SystemBackdropType)
+{
+    if (!::IsSupportSystemBackdrop())
+    {
+        return E_NOINTERFACE;
+    }
+    ::MileSetCaptionColorAttribute(WindowHandle, static_cast<COLORREF>(-1));
     const DWORD DwmWindowSystemBackdropTypeAttribute = 38;
-    const DWORD DwmWindowSystemBackdropTypeNone = 1;
-    DWORD Value = DwmWindowSystemBackdropTypeNone;
     return ::DwmSetWindowAttribute(
         WindowHandle,
         DwmWindowSystemBackdropTypeAttribute,
-        &Value,
+        &SystemBackdropType,
         sizeof(DWORD));
 }
 

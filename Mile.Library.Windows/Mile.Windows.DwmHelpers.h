@@ -42,15 +42,41 @@ EXTERN_C HRESULT WINAPI MileSetCaptionColorAttribute(
     _In_ COLORREF Value);
 
 /**
+ * @brief Extends the window frame into the client area.
+ * @param WindowHandle The handle to the window for which the attribute value
+ *                     is to be set.
+ * @param LeftWidth describes the left margins to use when extending the frame
+ *                  into the client area.
+ * @param TopHeight describes the top margins to use when extending the frame
+ *                  into the client area.
+ * @param RightWidth describes the right margins to use when extending the frame
+ *                   into the client area.
+ * @param BottomHeight describes the bottom margins to use when extending the frame
+ *                     into the client area.
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
+    _In_ HWND WindowHandle,
+    _In_ int LeftWidth,
+    _In_ int TopHeight,
+    _In_ int RightWidth,
+    _In_ int BottomHeight);
+
+/**
  * @brief Retrieves or specifies the system-drawn backdrop material of a
  *        window, including behind the non-client area.
  * @param WindowHandle The handle to the window for which the attribute value
  *                     is to be set.
+ * @param SystemBackdropType Flags for specifying the system-drawn backdrop
+ *                           material of a window, including behind the
+ *                           non-client area.
  * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
  *         HRESULT error code.
 */
-EXTERN_C HRESULT WINAPI MileDisableSystemBackdrop(
-    _In_ HWND WindowHandle);
+EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
+    _In_ HWND WindowHandle,
+    _In_ DWORD SystemBackdropType);
 
 /**
  * @brief Tests if the dark mode system setting is enabled on the computer.
