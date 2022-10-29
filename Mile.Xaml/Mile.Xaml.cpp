@@ -256,6 +256,17 @@ namespace
                             (Content.ActualTheme() == winrt::ElementTheme::Dark
                                 ? TRUE
                                 : FALSE));
+
+                        if (FAILED(::MileSetSystemBackdropAttribute(
+                            hWnd,
+                            DwmSystemBackdropType::Mica)))
+                        {
+                            ::MileSetCaptionColorAttribute(
+                                hWnd,
+                                (Content.ActualTheme() == winrt::ElementTheme::Dark
+                                    ? RGB(32, 32, 32)
+                                    : RGB(243, 243, 243)));
+                        }
                     }
                 }
             }
