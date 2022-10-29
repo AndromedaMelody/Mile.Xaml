@@ -16,6 +16,7 @@
 #include "XamlControlsResources.g.cpp"
 
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
@@ -33,6 +34,7 @@ namespace winrt
     using Windows::UI::Xaml::FocusState;
     using Windows::UI::Xaml::FrameworkElement;
     using Windows::UI::Xaml::ResourceDictionary;
+    using Windows::UI::Xaml::Window;
     using Windows::UI::Xaml::Controls::Control;
     using Windows::UI::Xaml::Hosting::DesktopWindowXamlSource;
     using Windows::UI::Xaml::Hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs;
@@ -309,6 +311,9 @@ namespace winrt::Mile::Xaml::implementation
 
         this->m_WindowsXamlManager =
             winrt::WindowsXamlManager::InitializeForCurrentThread();
+
+        winrt::Window::Current().as<IWindowPrivate>(
+            ).TransparentBackground(true);
 
         // Prevent showing the dummy/empty/ghost DesktopWindowXamlSource window
         // in the task bar.
