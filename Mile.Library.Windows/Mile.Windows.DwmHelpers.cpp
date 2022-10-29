@@ -99,7 +99,7 @@ EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
 
 EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
     _In_ HWND WindowHandle,
-    _In_ DWORD SystemBackdropType)
+    _In_ DwmSystemBackdropType Type)
 {
     if (!::IsSupportSystemBackdrop())
     {
@@ -110,7 +110,7 @@ EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
     return ::DwmSetWindowAttribute(
         WindowHandle,
         DwmWindowSystemBackdropTypeAttribute,
-        &SystemBackdropType,
+        &Type,
         sizeof(DWORD));
 }
 

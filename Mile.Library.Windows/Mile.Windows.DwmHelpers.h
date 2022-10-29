@@ -16,6 +16,27 @@
 #include <Windows.h>
 
 /**
+ * @brief Flags for specifying the system-drawn backdrop material of a window,
+          including behind the non-client area.
+ * @return None Don't draw any system backdrop.
+ * @return Mica Draw the backdrop material effect corresponding to a long-lived
+                window.
+ * @return Acrylic Draw the backdrop material effect corresponding to a
+                   transient window.
+ * @return MicaAlt Draw the backdrop material effect corresponding to a
+                   window with a tabbed title bar.
+*/
+enum class DwmSystemBackdropType : DWORD
+{
+    // Default applies to TitleBar only, not supporting extend into client aero.
+    // Default = 0, 
+    None = 1,
+    Mica = 2,
+    Acrylic = 3,
+    MicaAlt = 4
+};
+
+/**
  * @brief Allows the window frame for this window to be drawn in dark mode
  *        colors when the dark mode system setting is enabled.
  * @param WindowHandle The handle to the window for which the attribute value
@@ -68,7 +89,7 @@ EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
  *        window, including behind the non-client area.
  * @param WindowHandle The handle to the window for which the attribute value
  *                     is to be set.
- * @param SystemBackdropType Flags for specifying the system-drawn backdrop
+ * @param Type Flags for specifying the system-drawn backdrop
  *                           material of a window, including behind the
  *                           non-client area.
  * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
@@ -76,7 +97,7 @@ EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
 */
 EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
     _In_ HWND WindowHandle,
-    _In_ DWORD SystemBackdropType);
+    _In_ DwmSystemBackdropType Type);
 
 /**
  * @brief Tests if the dark mode system setting is enabled on the computer.

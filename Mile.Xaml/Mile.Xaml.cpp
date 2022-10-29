@@ -111,7 +111,7 @@ namespace
 
             if (FAILED(::MileSetSystemBackdropAttribute(
                 hWnd,
-                2)))
+                DwmSystemBackdropType::Mica)))
             {
                 ::MileSetCaptionColorAttribute(
                     hWnd,
