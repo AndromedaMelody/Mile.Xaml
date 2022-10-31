@@ -16,27 +16,6 @@
 #include <Windows.h>
 
 /**
- * @brief Flags for specifying the system-drawn backdrop material of a window,
-          including behind the non-client area.
- * @return None Don't draw any system backdrop.
- * @return Mica Draw the backdrop material effect corresponding to a long-lived
-                window.
- * @return Acrylic Draw the backdrop material effect corresponding to a
-                   transient window.
- * @return MicaAlt Draw the backdrop material effect corresponding to a
-                   window with a tabbed title bar.
-*/
-enum class DwmSystemBackdropType : DWORD
-{
-    // Default applies to TitleBar only, not supporting extend into client aero.
-    // Default = 0, 
-    None = 1,
-    Mica = 2,
-    Acrylic = 3,
-    MicaAlt = 4
-};
-
-/**
  * @brief Allows the window frame for this window to be drawn in dark mode
  *        colors when the dark mode system setting is enabled.
  * @param WindowHandle The handle to the window for which the attribute value
@@ -63,41 +42,15 @@ EXTERN_C HRESULT WINAPI MileSetCaptionColorAttribute(
     _In_ COLORREF Value);
 
 /**
- * @brief Extends the window frame into the client area.
- * @param WindowHandle The handle to the window for which the attribute value
- *                     is to be set.
- * @param LeftWidth describes the left margins to use when extending the frame
- *                  into the client area.
- * @param TopHeight describes the top margins to use when extending the frame
- *                  into the client area.
- * @param RightWidth describes the right margins to use when extending the frame
- *                   into the client area.
- * @param BottomHeight describes the bottom margins to use when extending the frame
- *                     into the client area.
- * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
- *         HRESULT error code.
-*/
-EXTERN_C HRESULT WINAPI MileSetWindowFrameMargins(
-    _In_ HWND WindowHandle,
-    _In_ int LeftWidth,
-    _In_ int TopHeight,
-    _In_ int RightWidth,
-    _In_ int BottomHeight);
-
-/**
  * @brief Retrieves or specifies the system-drawn backdrop material of a
  *        window, including behind the non-client area.
  * @param WindowHandle The handle to the window for which the attribute value
  *                     is to be set.
- * @param Type Flags for specifying the system-drawn backdrop
- *                           material of a window, including behind the
- *                           non-client area.
  * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
  *         HRESULT error code.
 */
-EXTERN_C HRESULT WINAPI MileSetSystemBackdropAttribute(
-    _In_ HWND WindowHandle,
-    _In_ DwmSystemBackdropType Type);
+EXTERN_C HRESULT WINAPI MileDisableSystemBackdrop(
+    _In_ HWND WindowHandle);
 
 /**
  * @brief Tests if the dark mode system setting is enabled on the computer.

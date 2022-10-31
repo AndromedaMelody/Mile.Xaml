@@ -25,6 +25,153 @@
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
 #include <Mile.Windows.DwmHelpers.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+
+bool IsWindowsVersionOrLater(
+    DWORD const& MajorVersion,
+    DWORD const& MinorVersion,
+    DWORD const& BuildNumber)
+{
+    OSVERSIONINFOEXW OSVersionInfoEx = { 0 };
+    OSVersionInfoEx.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
+    OSVersionInfoEx.dwMajorVersion = MajorVersion;
+    OSVersionInfoEx.dwMinorVersion = MinorVersion;
+    OSVersionInfoEx.dwBuildNumber = BuildNumber;
+    return ::VerifyVersionInfoW(
+        &OSVersionInfoEx,
+        VER_BUILDNUMBER,
+        ::VerSetConditionMask(
+            ::VerSetConditionMask(
+                ::VerSetConditionMask(
+                    0,
+                    VER_MAJORVERSION,
+                    VER_GREATER_EQUAL),
+                VER_MINORVERSION,
+                VER_GREATER_EQUAL),
+            VER_BUILDNUMBER,
+            VER_GREATER_EQUAL));
+}
+
+static bool IsSupportSystemBackdrop()
+{
+    static bool CachedResult = IsWindowsVersionOrLater(10, 0, 22523);
+    return CachedResult;
+}
+
+/**
+ * @brief Flags for specifying the system-drawn backdrop material of a window,
+ *        including behind the non-client area.
+ * @return Auto Let the Desktop Window Manager automatically decide the
+ *              system-drawn backdrop material for this window. (Applies to
+ *              TitleBar only, not supporting extend into client aero.)
+ * @return None Don't draw any system backdrop.
+ * @return Mica Draw the backdrop material effect corresponding to a long-lived
+ *              window.
+ * @return Acrylic Draw the backdrop material effect corresponding to a
+ *                 transient window.
+ * @return MicaAlt Draw the backdrop material effect corresponding to a
+ *                 window with a tabbed title bar.
+*/
+enum class DwmSystemBackdropType : DWORD
+{
+    Auto = 0, 
+    None = 1,
+    Mica = 2,
+    Acrylic = 3,
+    MicaAlt = 4
+};
+
+/**
+ * @brief 
+ * @return Defalut
+ * @return Auto
+ * @return Dark
+ * @return Light 
+*/
+enum class UxThemePreferredAppModeType : DWORD
+{
+    Defalut = 0, 
+    Auto = 1,
+    Dark = 2,
+    Light = 3
+};
+
+/**
+ * @brief Extends the window frame into the client area.
+ * @param WindowHandle The handle to the window for which the attribute value
+ *                     is to be set.
+ * @param LeftWidth describes the left margins to use when extending the frame
+ *                  into the client area.
+ * @param TopHeight describes the top margins to use when extending the frame
+ *                  into the client area.
+ * @param RightWidth describes the right margins to use when extending the frame
+ *                   into the client area.
+ * @param BottomHeight describes the bottom margins to use when extending the frame
+ *                     into the client area.
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+HRESULT MileSetWindowFrameMargins(
+    HWND WindowHandle,
+    int LeftWidth,
+    int TopHeight,
+    int RightWidth,
+    int BottomHeight)
+{
+    MARGINS Value{ 0 };
+    Value.cxLeftWidth = LeftWidth;
+    Value.cyTopHeight = TopHeight;
+    Value.cxRightWidth = RightWidth;
+    Value.cyBottomHeight = BottomHeight;
+    return DwmExtendFrameIntoClientArea(
+        WindowHandle,
+        &Value);
+}
+
+/**
+ * @brief Retrieves or specifies the system-drawn backdrop material of a
+ *        window, including behind the non-client area.
+ * @param WindowHandle The handle to the window for which the attribute value
+ *                     is to be set.
+ * @param Type Flags for specifying the system-drawn backdrop
+ *                           material of a window, including behind the
+ *                           non-client area.
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+HRESULT MileSetSystemBackdropAttribute(
+    HWND WindowHandle,
+    DwmSystemBackdropType Type)
+{
+    if (!::IsSupportSystemBackdrop())
+    {
+        return E_NOINTERFACE;
+    }
+    ::MileSetCaptionColorAttribute(WindowHandle, static_cast<COLORREF>(-1));
+    const DWORD DwmWindowSystemBackdropTypeAttribute = 38;
+    return ::DwmSetWindowAttribute(
+        WindowHandle,
+        DwmWindowSystemBackdropTypeAttribute,
+        &Type,
+        sizeof(DWORD));
+}
+
+/**
+ * @brief 
+ * @param Type 
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+HRESULT MileSetPreferredAppModeAttribute(
+    UxThemePreferredAppModeType Type)
+{
+    static const auto SetPreferredAppMode =
+        reinterpret_cast<HRESULT(CALLBACK*)(DWORD)>(::GetProcAddress(
+            ::GetModuleHandleW(L"UxTheme.dll"),
+            MAKEINTRESOURCEA(135)));
+    return SetPreferredAppMode(static_cast<DWORD>(Type));
+}
 
 namespace winrt
 {
@@ -106,6 +253,22 @@ namespace
                 (Content.ActualTheme() == winrt::ElementTheme::Dark
                     ? TRUE
                     : FALSE));
+
+            ::MileSetPreferredAppModeAttribute(UxThemePreferredAppModeType::Auto);
+            //::MileSetPreferredAppModeAttribute([&]()-> UxThemePreferredAppModeType
+            //    {
+            //        switch (Content.ActualTheme())
+            //        {
+            //        case winrt::ElementTheme::Default:
+            //            return UxThemePreferredAppModeType::Auto;
+            //        case winrt::ElementTheme::Light:
+            //            return UxThemePreferredAppModeType::Light;
+            //        case winrt::ElementTheme::Dark:
+            //            return UxThemePreferredAppModeType::Dark;
+            //        default:
+            //            return UxThemePreferredAppModeType::Defalut;
+            //        }
+            //    });
 
             ::MileSetWindowFrameMargins(hWnd, -1, -1, -1, -1);
 
@@ -256,6 +419,22 @@ namespace
                             (Content.ActualTheme() == winrt::ElementTheme::Dark
                                 ? TRUE
                                 : FALSE));
+
+                        ::MileSetPreferredAppModeAttribute(UxThemePreferredAppModeType::Auto);
+                        //::MileSetPreferredAppModeAttribute([&]()-> UxThemePreferredAppModeType
+                        //    {
+                        //        switch (Content.ActualTheme())
+                        //        {
+                        //        case winrt::ElementTheme::Default:
+                        //            return UxThemePreferredAppModeType::Auto;
+                        //        case winrt::ElementTheme::Light:
+                        //            return UxThemePreferredAppModeType::Light;
+                        //        case winrt::ElementTheme::Dark:
+                        //            return UxThemePreferredAppModeType::Dark;
+                        //        default:
+                        //            return UxThemePreferredAppModeType::Defalut;
+                        //        }
+                        //    });
 
                         if (FAILED(::MileSetSystemBackdropAttribute(
                             hWnd,
