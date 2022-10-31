@@ -57,6 +57,14 @@ EXTERN_C HRESULT WINAPI MileSetUseImmersiveDarkModeAttribute(
     _In_ HWND WindowHandle,
     _In_ BOOL Value)
 {
+    static const auto SetPreferredAppMode =
+        reinterpret_cast<HRESULT(CALLBACK*)(DWORD)>(::GetProcAddress(
+            ::GetModuleHandleW(L"UxTheme.dll"),
+            MAKEINTRESOURCEA(135)));
+    const DWORD UxThemePreferredAppModeAllowDark = 1;
+    const DWORD UxThemePreferredAppModeForceDark = 2;
+    const DWORD UxThemePreferredAppModeForceLight = 3;
+    SetPreferredAppMode(UxThemePreferredAppModeAllowDark);
     const DWORD DwmWindowUseImmersiveDarkModeBefore20H1Attribute = 19;
     const DWORD DwmWindowUseImmersiveDarkModeAttribute = 20;
     return ::DwmSetWindowAttribute(
